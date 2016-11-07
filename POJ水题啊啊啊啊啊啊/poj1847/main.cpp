@@ -7,74 +7,60 @@
 #include <deque>
 #define PII pair<int, int>
 #define P pari<int, PII>
-#define INF 0x11
+#define INF 0x11111111
 
 using namespace std;
 int mes[110][110];
-int mes2[110][110], pre[110];
 deque<int> step[110][110];
 int n, a, b;
-int getf(int i){
-    return i == pre[i]? i: getf(pre[i]);
-}
-bool union_set(int i, int j){
-    int idx = min(i, j), jdx = max(i, j);
-    if(pre[idx] == pre[jdx])
-        return true;
-    pre[jdx] = idx;
-    return false;
-}
-int solve2(){
-    for(int k = 1; k <= n; k++)
-        for(int i = 1; i <=n; i++)
-            for(int j = 1; j <= n; j++){
-                if(mes2[i][j] > mes2[i][k] + mes2[k][j]){
-                    step[i][j] = step[i][k];
-                    step[i][j].push_back(k);
-                }
-            }
-    return mes2[a][b];
-}
-int getr(){
-    int ai = a, bi = b, k, r = 0;
-    for(int i = 0; i < step[a][b].size(); i++){
-        int tm = step[a][b].front();
-        if(mes[ai][tm] == 1)
-            r++;
-        ai = tm;
-        step[a][b].pop_front();
-    }
-    if(mes[ai][bi] == 1)
-        r++;
-    return r;
-}
+
+
+/**
+就是有n个交叉点，就当做有n个点就行，然后这些点和其他点有些路径，每个点是一个开关，开关只能有一个方向走一条路，而第一个数就是默认的开关指向，不用旋转。
+
+这单犯了个错，就是默认的指向实际上只需要旋转0次，而其他路径只需要旋转1次，无论是哪条，只需1次，当初以为，第二个1次，第3个2次。
+
+
+
+题目给的实例
+
+3 2 1 //有3个开关点，计算从第二个到第一个最少需要旋转几次
+
+2 2 3//第1个开关可以通向2 和3 ，通向2不需要旋转，通向3需要旋转1次
+
+2 3 1//第2个开关可以通向3 和1， 通向3不需要旋转，通向1需要旋转1次
+*/
 int main()
 {
-    while(~scanf("%d %d %d", &n, &a, &b)){
-        memset(mes2, 0x11, sizeof(mes2));
-        for(int i = 0; i < 110; i++){
-            pre[i] = i;
-            for(int j = 0; j < 110; j++)
-                mes2[i][j] = 2;
-            mes2[i][i] = mes[i][i] = 0;
+    int n,a,b,k,x;
+    while(scanf("%d %d %d",&n,&a,&b)!=EOF)
+    {
+        for(int i=1; i<=n; i++)
+        {
+            for(int j=1; j<=i; j++)
+                mes[i][j]=mes[j][i]=INF;
         }
-        int k = 0, tmp = 0;
-        for(int i = 1; i <= n; i++){
-            scanf("%d", &k);
-            for(int j = 1; j <= k; j++){
-                scanf("%d", &tmp);
-                mes[i][tmp] = 1;
-                mes2[i][tmp] = mes2[tmp][i] = 1;
-                union_set(i, tmp);
+        for(int i=1; i<=n; i++)
+        {
+            scanf("%d",&k);
+            for(int j=1; j<=k; j++)
+            {
+                scanf("%d",&x);
+                mes[i][x]=j==1?0:1;
             }
         }
-        if(getf(a) != getf(b)){
-            printf("-1\n");
-            continue;
+        for(int k=1; k<=n; k++)
+        {
+            for(int i=1; i<=n; i++)
+            {
+                for(int j=1; j<=n; j++)
+                    mes[i][j]=min(mes[i][j],mes[i][k]+mes[k][j]);
+            }
         }
-        int r2 = solve2();
-        int r1 = getr();
-        printf("%d\n", r2 - r1);
+        if(mes[a][b]==INF)
+            printf("-1\n");
+        else
+            printf("%d\n",mes[a][b]);
     }
     return 0;
 }
