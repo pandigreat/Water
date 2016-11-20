@@ -6,6 +6,7 @@
 #include <math.h>
 #include <algorithm>
 #include <set>
+#include <stack>
 
 using namespace std;
 const int inf = 200000;
