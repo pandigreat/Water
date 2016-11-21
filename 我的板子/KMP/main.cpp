@@ -9,10 +9,8 @@
 #include <queue>
 #include <stack>
 #include <algorithm>
-/**
-* 之后考虑的是如果两个字符一样应该做的一个处理
-*还是我太菜了
-*/
+
+
 using namespace std;
 
 int n;
