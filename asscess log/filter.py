@@ -26,7 +26,7 @@ def solve(delta, InputFile):
 
 	earlyTime = 9999999999 
 	latestTime = 0 
-
+	
 	patternStr = r'%s(.+?)%s' %('\"','\"')
 	APIPatten = re.compile(patternStr, re.IGNORECASE) #Get the pattern to find the url of apis
 	patternStr = r'%s(.+?)%s' %('response_time:', ' ')
@@ -40,7 +40,7 @@ def solve(delta, InputFile):
 		post = re.search(APIPatten, line) 
 		tmpPost = post.group(1)
 		list = tmpPost.split(" ")
-		api += list[1] #get the full url
+		api += list[1] #get the full name of url
 		
 		hasApi = False
 		if dictNum.has_key(api):
@@ -54,10 +54,10 @@ def solve(delta, InputFile):
 		res_time = float(res_time) 
 		time_stamp = re.search(TimeStampPattern, line)
 		time_st = time_stamp.group(1)[1:].split(' ')
-		time_st = time_st[0] #string like 30/08/2016:10:30:00.000
-		time_st = time_st.split('.') #split string into to two parts like string 30/08/2016:10:30:00 and string 000
+		time_st = time_st[0] #String like 30/08/2016:10:30:00.000
+		time_st = time_st.split('.') #Split string into to two parts like string 30/08/2016:10:30:00 and string 000
 		time_st_1 = time.strptime(time_st[0], '%d/%m/%Y:%H:%M:%S')
-		time_st_2 = float(time_st[1]) * 0.001 #set time to second
+		time_st_2 = float(time_st[1]) * 0.001 #Set time into the unit second
 		time_st_1 = time.mktime(time_st_1) + time_st_2 
 		if time_st_1 < earlyTime:
 			earlyTime = time_st_1
@@ -72,14 +72,14 @@ def solve(delta, InputFile):
 
 	cntRes = {} #Result of respose time of all the apis
 	cntThr = {} #Result of latency of all the apis
-	msize = 0
+	msize = 0 #Max size of data
 	'''
-		calculation the throughoutput and response_time
+		Calculation of the throughoutput and response_time
 		by the delta time
 	'''
 
 	for key in dict:
-		dict[key].sort(key=lambda x:x[0]) #sort according to time_stamp  
+		dict[key].sort(key=lambda x:x[0]) #Sort the data of all apis according to the timestamps  
 		startTime = int(earlyTime)
 		endTime = int(startTime + delta)  
 		cntRes[key] = []
@@ -91,22 +91,19 @@ def solve(delta, InputFile):
 		pass
 		while(i < l and startTime <= latestTime):
 			(time_st, res_time) = dict[key][i]
-			#print time_st, res_time
 			pass
 			if(startTime <= time_st and time_st <= endTime): 
 				cnt += 1
 				ans_res += res_time
 				i += 1
-				#print startTime, endTime, time_st, res_time, cnt, i
 				pass
 			else:
-				#print time_st, key, cnt
 				cntThr[key].append(cnt)
 				if cnt is 0:
 					cntRes[key].append(ans_res)
 				else:
 					cntRes[key].append(ans_res / (1.0 * cnt))
-					
+				pass	
 				cnt = 0
 				ans_res = 0
 				startTime += delta
@@ -121,7 +118,7 @@ def solve(delta, InputFile):
 			msize = len(cntThr[key])
 
 	'''
-		fill up the table
+		Fill up the sheet
 	'''
 	for key in cntThr:
 		l = len(cntThr[key])
@@ -137,9 +134,9 @@ def solve(delta, InputFile):
 			d = d - 1
 			
 	'''
-		write result to file named result.xls 
-		result of calculation of response time is stored as a sheet named res_time
-		result of calculation of throughoutput is stored as a sheet named throughoutput
+		Write result to file named result.xls 
+		Result of calculation of response time is stored as a sheet named res_time
+		Result of calculation of throughoutput is stored as a sheet named throughoutput
 	''' 
 	w = xlwt.Workbook()
 	ws = w.add_sheet('res_time')
