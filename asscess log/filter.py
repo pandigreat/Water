@@ -63,7 +63,6 @@ def solve(delta, InputFile):
 			earlyTime = time_st_1
 		if time_st_1 > latestTime:
 			latestTime = time_st_1
-		
 		pass
 		if hasApi is False:
 			dict[api] = []
