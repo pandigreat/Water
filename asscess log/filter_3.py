@@ -3,8 +3,9 @@ import re
 import os
 import sys 
 import time
-import xlrd
-import xlwt
+#import xlrd
+#import xlwt
+from openpyxl import Workbook
 import platform
 
 '''
@@ -22,16 +23,19 @@ def readCSV(csvFile):
 	sysstr = platform.system()
 	if(sysstr != "Windows"):
 		fnames = csvFile
-	#print 'scvFile name ', csvFile 
+	print 'scvFile name ', csvFile 
 	fp = open(fnames, 'r')
 	res = []
 	for line in fp:
 		if line.find("Time;appname") is -1:
 			l = line.split(';') 
-			l2 = l[2].split(' ')
-			s = str(l[1])
-			s = s.split(':')
-			url = s[0] + l2[1] 
+			s1 = l[1].split(':')
+			s1 = s1[0]
+			s2 = l[2]
+			sl = s2.split(' ')
+			#url = s1 + sl[1] + ";" + sl[0]
+			url = s1 + sl[1]
+			#print url
 			res.append(url)
 	fp.close()
 	print 'Complete reading csv...'
@@ -59,9 +63,10 @@ def CreateInterFile(delta, InputFile):
 	fnames2 += str1
 	sysstr = platform.system()
 	if(sysstr != "Windows"):
-		fnames = csvFile
+		fnames = InputFile
 		fnames2 = str1
 		pass
+	print "fnames", fnames
 	fp = open(fnames, 'r') #Open the file of raw data
 	fp2 = open(fnames2, 'w')
 	#fp2.close()
@@ -80,6 +85,8 @@ def CreateInterFile(delta, InputFile):
 	InputFile means the name of file that contains the raw data
 '''
 def solve(delta, InputFile, csvFile):
+	insteadString = "api.ng.bluemix.net/v2/app"
+	specString = "api.ng.bluemix.net/v2/apps/uuid_replaced;PUT"
 	print 'delta is %d' %(delta)
 	interFIleName = "inter_delta"
 	dir = sys.path[0]
@@ -139,11 +146,21 @@ def solve(delta, InputFile, csvFile):
 			tl = len(tmpPost) - 1
 			tmpPost = tmpPost[1:tl] 
 			list = tmpPost.split(" ")
-			api += list[1] #get the full name of url 
-			if (isInCSV(api, csvMatrix) is False):
+			#api += list[1] + ";" + list[0] #get the full name of url
+			
+			api += list[1] 
+			api = api.split('?')
+			api = api[0] 
+			bk = False
+			if (api.find(insteadString) is not -1): 
+				api = insteadString	
+				bk = True
+				
+			if (isInCSV(api, csvMatrix) is False and bk is False):
+			#if (isInCSV(api, csvMatrix) is False):
 				#print idx - 1, 'ffff', api
 				continue
-			#fp2.write(line)
+
 			if dictNum.has_key(api):
 				dictNum[api] += 1
 				hasApi = True
@@ -172,24 +189,9 @@ def solve(delta, InputFile, csvFile):
 			#print latestTime, earlyTime
 			######
 		except:
-			print idx, "format error"
+			#print idx, "format error"
 			formaterror = True
-			
 
-		'''
-		finally: 
-			if formaterror is False:
-				
-				if time_st_1 < earlyTime:
-					earlyTime = time_st_1
-				if time_st_1 > latestTime:
-					latestTime = time_st_1
-				pass
-				print time_st_1
-				if hasApi is False:
-					dict[api] = []
-				dict[api].append((time_st_1, res_time)) 
-		'''
 	fp.close()
 	cntRes = {} #Result of respose time of all the apis
 	cntThr = {} #Result of latency of all the apis
@@ -262,38 +264,42 @@ def solve(delta, InputFile, csvFile):
 		Result of calculation of throughoutput is stored as a sheet named throughoutput
 	''' 
 	print 'before wlwt'
-	w = xlwt.Workbook()
-	ws = w.add_sheet('res_time')
-	i = 0
-	j = 0
+	w = Workbook()
+	ws = w.create_sheet('res_time')
+	i = 1
+	j = 1
 	for key in cntRes:
-		ws.write(i, j, key)
+		ws.cell(row=i, column=j).value = key
 		j += 1
 		for val in cntRes[key]:
-			ws.write(i, j, val)
+			ws.cell(row=i, column=j).value = val
 			j += 1
 		i += 1
-		j = 0
-	ws2 = w.add_sheet('throughoutput')
-	i = 0
-	j = 0
+		j = 1
+	ws2 = w.create_sheet('throughoutput')
+	i = 1
+	j = 1
 	for key in cntThr:
-		ws2.write(i, j, key)
+		ws2.cell(row=i, column=j).value = key
 		j += 1
 		for val in cntThr[key]:
-			ws2.write(i, j, val)
+			ws2.cell(row=i, column=j).value = val
 			j += 1
 		i += 1
-		j = 0
+		j = 1
 	resname = 'result_delta_'
 	resname += str(delta)
-	w.save(fname + resname + '.xls')
+	if(sysstr != "Windows"):
+		fname = ""
+	#w.save(fname + resname + '.xls')
+	w.save(fname + resname + '.xlsx')
 	print 'delta %d is done...\n' %(delta)
 	
 if __name__ == '__main__':
 	InputFile = "new_access.log"
-	#delta = [1, 2, 3, 5, 10, 20]
-	delta = [1,2,8]
+	#InputFile = "sample5000"
+	delta = [1, 2, 3, 5, 10, 20]
+	#delta = [2]
 	csvFile = "grafana_data_export.csv"
 	for val in delta:
 		solve(val, InputFile, csvFile)
