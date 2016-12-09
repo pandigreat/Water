@@ -35,6 +35,7 @@ def readCSV(csvFile):
 			sl = s2.split(' ')
 			#url = s1 + sl[1] + ";" + sl[0]
 			url = s1 + sl[1]
+			url += ";" + sl[0]
 			#print url
 			res.append(url)
 	fp.close()
@@ -151,9 +152,10 @@ def solve(delta, InputFile, csvFile):
 			api += list[1] 
 			api = api.split('?')
 			api = api[0] 
+			api += ";" + list[0]
 			bk = False
 			if (api.find(insteadString) is not -1): 
-				api = insteadString	
+				api = insteadString	+ ";PUT"
 				bk = True
 				
 			if (isInCSV(api, csvMatrix) is False and bk is False):
