@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import re
+import os
 import sys 
 import time
 import xlrd
@@ -10,6 +11,7 @@ import platform
 	Read the csv file to compare with raw data
 '''
 def readCSV(csvFile):
+	print 'Start read CSV...'
 	dir = sys.path[0]
 	dir_2 = dir.split('\\')
 	fname = ""
@@ -20,7 +22,8 @@ def readCSV(csvFile):
 	sysstr = platform.system()
 	if(sysstr != "Windows"):
 		fnames = csvFile
-	fp = open(csvFile, 'r')
+	#print 'scvFile name ', csvFile 
+	fp = open(fnames, 'r')
 	res = []
 	for line in fp:
 		if line.find("Time;appname") is -1:
@@ -31,6 +34,7 @@ def readCSV(csvFile):
 			url = s[0] + l2[1] 
 			res.append(url)
 	fp.close()
+	print 'Complete reading csv...'
 	return res
 '''
 	Check the url in raw data is in the csv file too
@@ -42,30 +46,32 @@ def isInCSV(url, matrix):
 	Create interfile to shorten the time of the program
 '''
 def CreateInterFile(delta, InputFile):
+	print 'Start Create inter files...'
 	dir = sys.path[0]
 	dir_2 = dir.split('\\')
 	fname = "" 
-	str = "inter_delta_" + str(delta)
+	str1 = "inter_delta_" + str(delta)
 	for i in range(len(dir_2)):
 		fname += dir_2[i] + "\\\\" 
 	fnames = fname
 	fnames2 = fname
 	fnames += InputFile
-	fnames2 += str
+	fnames2 += str1
 	sysstr = platform.system()
 	if(sysstr != "Windows"):
 		fnames = csvFile
-		fnames2 = str
+		fnames2 = str1
 		pass
 	fp = open(fnames, 'r') #Open the file of raw data
 	fp2 = open(fnames2, 'w')
-	fp2.close()
-	fp2 = open(fnames2, 'a') 
+	#fp2.close()
+	#fp2 = open(fnames2, 'a') 
 	for line in fp:
 		if (line.find("mybluemix.net") is -1):
 			fp2.writelines(line)
 	fp.close()
 	fp2.close()
+	print 'Create inter file done...'
 	
 '''
 	the function to filter the raw data
@@ -74,6 +80,7 @@ def CreateInterFile(delta, InputFile):
 	InputFile means the name of file that contains the raw data
 '''
 def solve(delta, InputFile, csvFile):
+	print 'delta is %d' %(delta)
 	interFIleName = "inter_delta_" + str(delta)
 	dir = sys.path[0]
 	dir_2 = dir.split('\\')
@@ -83,16 +90,20 @@ def solve(delta, InputFile, csvFile):
 	fnames = fname
 	fnames += csvFile
 	sysstr = platform.system()
+	print "platform:",sysstr
 	if(sysstr != "Windows"):
 		fnames = csvFile
+	if(sysstr == "Windows"):
+		interFIleName = fname + interFIleName
 	
-	if(!os.path.exists(interFIleName)):  #If interFIleName doesn't exist, then create it
+	if(os.path.exists(interFIleName) is False):  #If interFIleName doesn't exist, then create it
+		print 'Does not exit interFIle...'
 		CreateInterFile(delta, InputFile)
-	
+	else:
+		print 'InterFile exits...'
+	print 'interfilename', interFIleName
 	fp = open(interFIleName, 'r')
 	
-	#fp = open(fnames, 'r') #Open the file case.txt
-	#fp = open(InputFile, 'r')
 	dictNum = {} #Record the appearance of the every api
 	dict = {} #Record the response time and latency which is saved as a tuple of all service
 
@@ -107,8 +118,7 @@ def solve(delta, InputFile, csvFile):
 	TimeStampPattern = re.compile(patternStr, re.IGNORECASE) #Get the pattern to find the ResponseTime Pattern
 
 	csvMatrix = readCSV(csvFile) #Get matrix  list from csv file
-	#print csvMatrix[0]
-	#fp2 = open(fname + 'inter_delta_' + str(delta), 'a')
+	
 	idx = 0
 	for line in fp:
 		#print idx
@@ -127,14 +137,13 @@ def solve(delta, InputFile, csvFile):
 			post = re.search(APIPatten, line) 
 			tmpPost = post.group(0)
 			tl = len(tmpPost) - 1
-			tmpPost = tmpPost[1:tl]
-			#tmpPost = post.group(1)
+			tmpPost = tmpPost[1:tl] 
 			list = tmpPost.split(" ")
 			api += list[1] #get the full name of url 
 			if (isInCSV(api, csvMatrix) is False):
 				#print idx - 1, 'ffff', api
 				continue
-			fp2.write(line)
+			#fp2.write(line)
 			if dictNum.has_key(api):
 				dictNum[api] += 1
 				hasApi = True
@@ -181,8 +190,7 @@ def solve(delta, InputFile, csvFile):
 					dict[api] = []
 				dict[api].append((time_st_1, res_time)) 
 		'''
-	fp.close()	
-	fp2.close()
+	fp.close()
 	cntRes = {} #Result of respose time of all the apis
 	cntThr = {} #Result of latency of all the apis
 	msize = 0 #Max size of data
@@ -193,7 +201,7 @@ def solve(delta, InputFile, csvFile):
 
 	for key in dict:
 		dict[key].sort(key=lambda x:x[0]) #Sort the data of all apis according to the timestamps 
-		print key, 'sort'
+		#print key, 'sort'
 		startTime = int(earlyTime)
 		endTime = int(startTime + delta)  
 		cntRes[key] = []
@@ -202,7 +210,7 @@ def solve(delta, InputFile, csvFile):
 		l = len(dict[key])  
 		cnt = 0
 		ans_res = 0  
-		print startTime, latestTime
+		#print startTime, latestTime
 		pass
 		while(i < l and startTime <= latestTime): 
 			(time_st, res_time) = dict[key][i]
@@ -280,14 +288,15 @@ def solve(delta, InputFile, csvFile):
 	resname = 'result_delta_'
 	resname += str(delta)
 	w.save(fname + resname + '.xls')
-	print 'All done...'
+	print 'delta %d is done...\n' %(delta)
 	
 if __name__ == '__main__':
 	InputFile = "new_access.log"
 	#delta = [1, 2, 3, 5, 10, 20]
-	delta = [8]
+	delta = [1,2,8]
 	csvFile = "grafana_data_export.csv"
 	for val in delta:
 		solve(val, InputFile, csvFile)
+	print 'All done...'
 	#solve(delta, InputFile, csvFile)
 

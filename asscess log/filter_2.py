@@ -9,6 +9,7 @@ import xlwt
 	Read the csv file to compare with raw data
 '''
 def readCSV(csvFile):
+	print 'read CSV File to create interFile'
 	dir = sys.path[0]
 	dir_2 = dir.split('\\')
 	fname = ""
@@ -28,6 +29,7 @@ def readCSV(csvFile):
 			url = s[0] + l2[1] 
 			res.append(url)
 	fp.close()
+	print 'interFile was created'
 	return res
 '''
 	Check the url in raw data is in the csv file too
