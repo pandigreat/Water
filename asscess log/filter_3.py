@@ -50,7 +50,7 @@ def CreateInterFile(delta, InputFile):
 	dir = sys.path[0]
 	dir_2 = dir.split('\\')
 	fname = "" 
-	str1 = "inter_delta_" + str(delta)
+	str1 = "inter_delta"
 	for i in range(len(dir_2)):
 		fname += dir_2[i] + "\\\\" 
 	fnames = fname
@@ -81,7 +81,7 @@ def CreateInterFile(delta, InputFile):
 '''
 def solve(delta, InputFile, csvFile):
 	print 'delta is %d' %(delta)
-	interFIleName = "inter_delta_" + str(delta)
+	interFIleName = "inter_delta"
 	dir = sys.path[0]
 	dir_2 = dir.split('\\')
 	fname = ""
