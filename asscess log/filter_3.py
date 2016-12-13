@@ -5,7 +5,7 @@ import sys
 import time
 #import xlrd
 #import xlwt
-from openpyxl import Workbook
+from openpyxl import Workbook #Import the package can support over 20000 column written
 import platform
 
 '''
@@ -300,7 +300,7 @@ def solve(delta, InputFile, csvFile):
 if __name__ == '__main__':
 	InputFile = "new_access.log"
 	#InputFile = "sample5000"
-	delta = [1, 2, 3, 5, 10, 20]
+	delta = [1, 2, 3, 5, 10, 20, 30, 40, 60] #Different delta, different result
 	#delta = [2]
 	csvFile = "grafana_data_export.csv"
 	for val in delta:
