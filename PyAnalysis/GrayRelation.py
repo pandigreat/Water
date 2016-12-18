@@ -1,8 +1,10 @@
 #-*-coding:utf-8-*-#
 import sys
 import platform
-import numpy as np
-
+import numpy as np 
+from decimal import *
+from openpyxl import Workbook
+from openpyxl import load_workbook
 '''
 	Read the xlxs file
 '''
@@ -39,10 +41,11 @@ def ReadFile(fileName):
 '''
 	Record File
 '''
-def RecordResult(ResMetrix, nrows, rho, ResultFileName):
+def RecordResult(ResMetrix, nrows, rho):
 	print "RecordResult"
+	ResultFileName = "RecordResult" + "_rho_" + str(rho) + ".xlsx"
 	w = Workbook()
-	ws = w.create_sheet('Rho_Value_' + rho) #Insert a sheet from the head of the table
+	ws = w.create_sheet('Rho_Value_' + str(rho)) #Insert a sheet from the head of the table
 	for i in range(0, nrows):
 		for j in range(0, nrows):
 			ws.cell(row=i+1, column=j+1).value = ResMetrix [i][j]
@@ -62,30 +65,43 @@ def RecordResult(ResMetrix, nrows, rho, ResultFileName):
 	Ralation coefficient calcalation
 '''
 def RalationCoefficent(idx, Metrix, nrows, ncols, rho):
-	print 'RalationCoefficent...'
-	metrix = [[0 for col in range(ncols)] for row in range(nrows)]
+	print 'RalationCoefficent...', idx
+	ResMetrix = [[0 for col in range(ncols)] for row in range(nrows)]
 	li = []
 	for i in range(nrows):
 		if i is not idx:
-			li.append(idx)
+			li.append(i)
 	
-	Min = 999999999
-	Max = -99999999
-	
+	Min = Decimal(0x7fff)
+	Max = Decimal(-0xffff)
+	#print Metrix
 	for i in li:
 		for j in range(ncols):
-			val = abs(Metrix[idx][j] - Metrix[i][j])
+			a = Decimal(Metrix[idx][j])
+			b = Decimal(Metrix[i][j])
+			#print float(a - b)
+			val = abs(a- b)
+			
 			if val < Min:
 				Min = val
 			if val > Max:
 				Max = val
-	
+	#print "Max Min", Max, Min
 	for i in range(nrows):
 		for j in range(ncols):
 			if (i == idx):
 				ResMetrix[i][j] = 1
 			else:
-				ResMetrix[i][j] = (rho * Max + Min) / (rho * Max + Metrix[i][j])
+				a = Decimal(Metrix[idx][j])
+				b = Decimal(Metrix[i][j])
+				val = abs(a - b)
+				para1 = (Decimal(rho) * Decimal(Max) + Decimal(Min))
+				para2 = (Decimal(rho) * Decimal(Max) + val)
+				#if(para2  <= Decimal(0.0000000003)):
+				#	para2 = para1
+				#print "1, 2", para1, para2
+				#print para1/para2
+				ResMetrix[i][j] = para1 / para2
 	
 	Res = []
 	
@@ -96,6 +112,7 @@ def RalationCoefficent(idx, Metrix, nrows, ncols, rho):
 		Res.append(sum / ncols)
 	
 	return Res
+	
 '''
 	Gray Ralation Analysis
 '''
@@ -114,14 +131,25 @@ def GrayRaltionAnalysis(InputFileName, rho, ResultFileName = "GrayRaltion_Result
 		for j in range(ncols):
 			Metrix[i][j] = Metrix[i][j] / ave
 	
-	ResMetrix = []
+	fp = open('f.txt', 'w')
+	for i in range(nrows):
+		for j in range(ncols):
+			fp.write(str(Metrix[i][j]) + " ")
+		fp.write("\n") 
+	fp.close()
 	
-	RecordResult(Metrix, nrows, rho)
+	RecordMetrix = []
+	for i in range(nrows):
+		res = RalationCoefficent(i, Metrix, nrows, ncols, rho)
+		RecordMetrix.append(res)
+	#print RecordMetrix
+	RecordResult(RecordMetrix, nrows, rho)
 	print 'Done...'
 	
 	
 if __name__ == '__main__':
-	InputFileName = ""
+	InputFileName = "circuit_break_1.xlsx"
 	rho = 0.5 #Normally 0.5, below 0.5463 precisely
 	GrayRaltionAnalysis(InputFileName, rho)
+	
 	
