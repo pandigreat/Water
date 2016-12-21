@@ -1,5 +1,6 @@
 #-*-coding:utf-8-*-#
 import sys
+import math
 import platform
 import numpy as np 
 from decimal import *
@@ -61,7 +62,7 @@ def RecordResult(ResMetrix, nrows, rho):
 	
 	w.save(ResultFileName)
 '''
-	Ralation coefficient calcalation
+	Ralation coefficient calcalation Standard Version
 '''
 def RalationCoefficent_Standard(idx, Metrix, nrows, ncols, rho):
 	print 'RalationCoefficent...', idx
@@ -191,23 +192,45 @@ def GrayRaltionAnalysis(InputFileName, rho, ResultFileName = "GrayRaltion_Result
 	print 'Done...'
 
 '''
-	Gray Ralation Analysis
+	Gray Ralation Analysis for standard
 '''
-def GrayRaltionAnalysis_Standard(InputFileName, rho, ResultFileName = "GrayRaltion_Result"):
-	print 'GrayRaltionAnalysis...'
+def GrayRaltionAnalysis_Standard(InputFileName, rho, ResultFileName = "GrayRaltion_Standard_Result"):
+	print 'GrayRaltionAnalysisStandard...'
 	(Metrix, nrows, ncols) = ReadFile(InputFileName)
 	AverageMetrix = []
+	StandardDeviation = []
 	for i in range(nrows):
 		ave = 0.0
 		for val in Metrix[i]:
 			ave += val
 		AverageMetrix.append(ave / ncols)
-	
+	'''
 	for i in range(nrows):
 		ave = AverageMetrix[i]
 		for j in range(ncols):
 			Metrix[i][j] = Metrix[i][j] / ave
-	
+	'''
+	for i in range(nrows):
+		ave = AverageMetrix[i]
+		ave = Decimal(ave)
+		sum = Decimal(0)
+		for j in range(ncols):
+			tmp = Decimal(Metrix[i][j])
+			r = ave - tmp
+			r = r * r
+			sum += r
+		sum /= Decimal(ncols)
+		sum = math.sqrt(sum)
+		StandardDeviation.append(sum)
+		
+	for i in range(nrows):
+		ave = AverageMetrix[i]
+		ave = Decimal(ave)
+		dev = Decimal(StandardDeviation[i])
+		for j in range(ncols):
+			tmp = Decimal(Metrix[i][j])
+			tmp = (tmp - ave) / dev
+			Metrix[i][j] = tmp
 	
 	RecordMetrix = []
 	for i in range(nrows):
@@ -219,7 +242,7 @@ def GrayRaltionAnalysis_Standard(InputFileName, rho, ResultFileName = "GrayRalti
 	
 if __name__ == '__main__':
 	InputFileName = "latency1_1.xlsx"
-	rho = 0.5 #Normally 0.5, below 0.5463 precisely
-	GrayRaltionAnalysis(InputFileName, rho)
+	rho = 0.546 #Normally 0.5, below 0.5463 precisely
+	GrayRaltionAnalysis_Standard(InputFileName, rho)
 	
 	
