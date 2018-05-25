@@ -10,7 +10,7 @@ void solve(){
 	memset(dp, 0, sizeof(dp));
 	for(int i = 0; i < l; i++){
 		dp[i] = 1;
-		for(int j = 0; j < l; j++){
+		for(int j = 0; j < i; j++){
 			if(mes[i] > mes[j])
 				dp[i] = max(dp[i], dp[j] + 1);
 		}

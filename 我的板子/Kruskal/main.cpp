@@ -26,7 +26,7 @@ bool union_set(int i, int j){
 }
 
 struct cmp{
-    bool operator()(P a, P b){
+    bool operator() <(P a, P b){
         return a.first > b.first;
     }
 };

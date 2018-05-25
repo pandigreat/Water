@@ -25,12 +25,16 @@ void solve(){
     int l = strlen(mes);
     memset(dp, 0, sizeof(dp));
     for(int i = 0; i < l; i++) dp[i][i] = 1;
-    for(int i = 1; i < l; i++) { ///从长度为 i 表示 当前长度为 i+1的 子序列
-        for(int j = 0; i + j < l; j++ ){ ///全部的长度为 i + 1的子序列
-            if(mes[j] == mes[j + i]) dp[j][j + i] = dp[j + 1][j + i - 1] + 2;
-            else dp[j][j + i] = max(dp[j + 1][j + i], dp[j][j + i - 1]);
-        }
-    }
+	for(int i = l - 1; i >= 0; i--){
+		dp[i][i] = 1;
+		for(int j = i+1; j < l; j++){
+			if(mes[i] == mes[j]) 
+				dp[i][j] = dp[i+1][j-1] + 2;
+			else
+				dp[i][j] = max(dp[i+1][j], dp[i][j-1]);
+		}
+	}
+    
     printf("%d\n", dp[0][l - 1]);///返回子串mes[0][l - 1] 的结果
 }
 

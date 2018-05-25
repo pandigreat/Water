@@ -14,9 +14,15 @@
 #define mid((x), (y), (z))) min(max((x), (y))), max((x), (z))))
 #define MaxInt 0x7fffffff
 
+/**
+ 快速幂算法——可迅速求出a^b。其主要理论依据如下：
 
+        1，当b为偶数时，a^b可以转为a^2的b/2次方。
+
+        2，当b为奇数时，a^b可以转为a^2的b/2次方，再乘以a。
+
+**/
 using namespace std;
-
 typedef long long ll;
 
 ll dfs(ll x, ll y){
